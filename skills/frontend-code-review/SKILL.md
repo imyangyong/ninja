@@ -1,6 +1,6 @@
 ---
 name: frontend-code-review
-description: 前端代码质量审查。当用户请求 review 代码、code review、审查代码改动，或需要在合并前评估代码的正确性、健壮性、架构与组件设计、TypeScript 类型安全、命名规范、性能、安全性与可维护性时使用。适用于 Vue / React + TypeScript 项目。
+description: 前端代码质量审查。当用户请求 code review、代码审查 / 代码评审 / 代码走查、review 代码、审查代码改动、PR review，或要求在提交 / 合并前评估代码的正确性、健壮性、架构与组件设计、TypeScript 类型安全、命名规范、性能、安全性与可维护性时使用——即使只说"帮我看看这段代码有没有问题"。
 ---
 
 # 角色与目标
