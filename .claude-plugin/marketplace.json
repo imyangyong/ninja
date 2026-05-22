@@ -1,0 +1,20 @@
+{
+  "name": "ninja",
+  "owner": {
+    "name": "Yong Yang",
+    "email": "yongyang9410@gmail.com"
+  },
+  "metadata": {
+    "description": "Yang Yong’s Personalized AI Extension Suite.",
+    "version": "0.0.11"
+  },
+  "plugins": [
+    {
+      "name": "ninja",
+      "source": "./",
+      "description": "Yong Yang's personal agent extension suite.",
+      "category": "suite",
+      "tags": ["code-reivew"]
+    }
+  ]
+}
