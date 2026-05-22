@@ -1,6 +1,6 @@
 # Ninja
 
-Yang Yong’s Personalized AI Extension Suite, Currently Including Skills Only.
+[Yang Yong](https://github.com/imyangyong)’s Personalized AI Extension Suite, Currently Including Skills Only.
 
 ## Installation
 
