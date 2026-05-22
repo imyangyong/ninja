@@ -1,6 +1,6 @@
 ---
 name: generate-commit-message
-description: Generate a Conventional Commits-compliant commit message by analyzing code diffs or change descriptions. Use this skill whenever the user provides a git diff, paste of changed code, or asks for help writing a commit message — even if they just say "help me commit this" or "what should I write for this change".
+description: 生成符合 Conventional Commits 规范的提交消息。当用户请求写 commit message、生成提交信息、帮我 commit 代码，或提供了 git diff / 代码改动让你总结成一条提交消息时使用——即使用户只说"帮我提交一下"或"这个改动该写什么"。
 ---
 
 # 生成 Commit Message
