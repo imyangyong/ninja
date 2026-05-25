@@ -142,14 +142,20 @@ description: 前端代码质量审查。当用户请求 code review、代码审�
 ### 🏗 架构问题
 （仅当存在架构/设计层面问题时保留此节，否则省略）
 
-### 问题清单
+### 问题清单(按严重程度倒序)
 
-#### 🔴 `src/components/OrderList.vue:42` · 正确性
-`orderList` 可能为 `undefined`，直接调用 `.map()` 会运行时崩溃。
-\`\`\`diff
-- orderList.map(item => render(item))
-+ (orderList ?? []).map(item => render(item))
-\`\`\`
+```
+【维度】正确性
+【位置】src/components/OrderList.vue:42
+【风险】🔴 必须修复（Critical）
+【问题】xxx(描述现象)
+【原因】为什么这是问题——如果不修复会发生什么
+【建议】具体改法
+【修改前】
+原代码
+【修改后】
+改进代码
+```
 
 #### 🟡 `src/api/user.ts:18` · 类型安全
 接口返回值标注为 `any`，下游全部失去类型保护。建议补充 `UserInfo` 类型定义。
