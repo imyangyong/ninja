@@ -26,5 +26,6 @@ After that, reload plugins:
 
 ## SKILLS
 
-- frontend-code-review
-- generate-commit-message
+- frontend-code-review: 代码评审。
+- generate-commit-message: 生成符合项目规范的 commit message。
+- clarify-before-coding: 在 coding 任务前先发现并确认模糊需求。
