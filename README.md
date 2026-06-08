@@ -1,8 +1,18 @@
 # Ninja
 
-[Yang Yong](https://github.com/imyangyong)’s Personalized AI Extension Suite, Currently Including Skills Only.
+[Yang Yong](https://github.com/imyangyong)’s Personalized AI Extension Suite.
 
 ## Installation
+
+### Codex
+
+Install this repository as a Codex plugin from GitHub:
+
+```bash
+codex plugin install imyangyong/ninja
+```
+
+Then restart Codex or reload plugins.
 
 ### Claude Code
 
