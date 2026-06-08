@@ -8,8 +8,16 @@
 
 Install this repository as a Codex plugin from GitHub:
 
+**Step 1: Add the marketplace**
+
 ```bash
-codex plugin install imyangyong/ninja
+codex plugin marketplace add git@github.com:imyangyong/ninja.git --ref main
+```
+
+**Step 2: Install the plugin**
+
+```bash
+codex plugin add ninja@imyangyong
 ```
 
 Then restart Codex or reload plugins.
