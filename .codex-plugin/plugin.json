@@ -14,7 +14,7 @@
     "skills",
     "code-review",
     "commit-message",
-    "clarification"
+    "coding-guidelines"
   ],
   "skills": "./skills/",
   "interface": {
@@ -30,7 +30,7 @@
     "defaultPrompt": [
       "Review my frontend changes.",
       "Generate a commit message.",
-      "Clarify this coding task first."
+      "Follow coding guidelines."
     ],
     "brandColor": "#111827"
   }
