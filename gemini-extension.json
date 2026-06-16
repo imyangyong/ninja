@@ -1,0 +1,6 @@
+{
+  "name": "ninja",
+  "description": "Yong Yang's personal agent extension suite.",
+  "version": "0.0.9",
+  "contextFileName": "AGENTS.md"
+}

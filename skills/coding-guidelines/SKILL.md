@@ -65,3 +65,13 @@ license: MIT
 ```
 
 强成功标准能让你独立循环推进。弱标准（“让它能用”）需要不断澄清。
+
+## 5. 实现后审查（Post-Implementation Review）
+
+**写完代码不等于完成。先验证，再用独立上下文复审。**
+
+**REQUIRED SUB-SKILL:** `ninja:subagent-code-review` — 实现后默认派发独立 subagent 审查改动。跳过条件、rubric 路由、fallback 策略均以该 skill 为准，不在此重复。
+
+完成实现后：
+- 运行与改动相关的测试、类型检查或 lint，汇总命令与结果。
+- 调用上述 sub-skill 派发 review。

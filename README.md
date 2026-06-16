@@ -45,5 +45,6 @@ After that, reload plugins:
 ## SKILLS
 
 - frontend-code-review: 代码评审。
+- subagent-code-review: 默认派发独立 subagent 审查改动，按文件类型路由 rubric，自动修复 Critical/Important。
 - generate-commit-message: 生成符合项目规范的 commit message。
 - coding-guidelines: 降低 LLM 写代码的常见错误：先思考再动手、保持简单、外科手术式改动、目标可验证。Fork from: [Karpathy Guidelines](https://x.com/karpathy/status/2015883857489522876).
