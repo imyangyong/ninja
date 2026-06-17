@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${PLUGIN_ROOT}/hooks/session-start\"",
+            "async": false,
+            "statusMessage": "Loading Ninja session guidance"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${PLUGIN_ROOT}/hooks/check-dangerous-commands\"",
+            "async": false,
+            "statusMessage": "Checking dangerous commands"
+          }
+        ]
+      }
+    ]
+  }
+}

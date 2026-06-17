@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# Ninja PreToolUse hook — intercepts dangerous Bash commands the agent is about
+# to run and requires explicit user confirmation via a macOS dialog.
+#
+# Wire-up: hooks/hooks.json → PreToolUse matcher "Bash".
+# Exit codes follow the Claude Code hook spec:
+#   0 → allow; 2 → block (stderr is fed back to the model).
+
+# Ensure UTF-8 decoding in AppleScript's `do shell script` path even when the
+# parent process inherits an unset/POSIX locale (cron, launchd, headless IDE).
+export LANG="${LANG:-zh_CN.UTF-8}"
+
+INPUT=$(cat)
+CMD=$(jq -r '.tool_input.command // ""' <<<"$INPUT" 2>/dev/null)
+[[ -z "$CMD" ]] && exit 0
+
+RULES=()
+match() { grep -qiE "$1" <<<"$CMD"; }
+
+# Token boundary: start-of-line or shell separator.
+B='(^|[[:space:];|&`])'
+
+match "${B}rm[[:space:]]"                                       && RULES+=("rm (删除文件/目录)")
+match '\bDELETE[[:space:]]+FROM\b'                              && RULES+=("DELETE FROM (SQL 删除)")
+match '\bDROP[[:space:]]+(TABLE|DATABASE|SCHEMA)\b'             && RULES+=("DROP TABLE/DATABASE (SQL 销毁)")
+match '\bTRUNCATE[[:space:]]+(TABLE[[:space:]]+)?\S'            && RULES+=("TRUNCATE (SQL/文件清空)")
+match "${B}(shutdown|reboot|poweroff|halt)\b"                   && RULES+=("shutdown/reboot/poweroff/halt (系统关机/重启)")
+match "${B}(mkfs|fdisk)\b"                                      && RULES+=("mkfs/fdisk (磁盘格式化)")
+match '\bdiskutil\b.*(erase|format)'                            && RULES+=("diskutil erase/format (磁盘格式化)")
+match '\bdd\b.*\bof=/dev/'                                      && RULES+=("dd of=/dev/... (直接写入磁盘设备)")
+match '(curl|wget)\b.+\|\s*(bash|sh|zsh|python|python3|node)\b' && RULES+=("curl/wget | shell (远程代码执行)")
+
+# git push --force 到 main/master（任意参数顺序）
+if match 'git[[:space:]]+push\b' && match '(--force|-f)\b' && match '\b(main|master)\b'; then
+    RULES+=("git push --force 到 main/master")
+fi
+
+(( ${#RULES[@]} == 0 )) && exit 0
+
+RULE_TEXT=$(printf '• %s\n' "${RULES[@]}")
+
+# 通过环境变量传递内容，AppleScript 用 `system attribute` 读取——
+# 比 tempfile + `do shell script "cat ..."` 更简洁，且避免任何 shell 转义/locale 解码歧义。
+RESULT=$(HOOK_CMD="$CMD" HOOK_RULES="$RULE_TEXT" osascript <<'APPLESCRIPT' 2>/dev/null
+on run
+    set cmdText to system attribute "HOOK_CMD"
+    set rulesText to system attribute "HOOK_RULES"
+    set dialogText to "⚠️ AI 即将执行危险命令，是否允许？" & return & return & "触发规则：" & return & rulesText & return & return & "命令内容：" & return & cmdText
+    set response to button returned of (display dialog dialogText with title "危险命令确认" buttons {"取消", "允许执行"} default button "取消" cancel button "取消" with icon caution)
+    return response
+end run
+APPLESCRIPT
+)
+OSASCRIPT_EXIT=$?
+
+# Claude Code 规定：阻止时，反馈给模型的内容必须写到 stderr；stdout 是放行路径。
+block() {
+    {
+        echo "$1"
+        echo "触发规则:"
+        echo "$RULE_TEXT"
+        echo "原始命令: $CMD"
+        [[ -n "${2:-}" ]] && echo "$2"
+    } >&2
+    exit 2
+}
+
+# osascript 失败（无 GUI / SSH 环境）：自动阻止。
+if [[ $OSASCRIPT_EXIT -ne 0 && "$RESULT" != "允许执行" ]]; then
+    block "⛔ 危险命令被拦截（无法弹出确认框，已自动阻止）。" "如需执行，请在终端手动运行。"
+fi
+
+if [[ "$RESULT" == "允许执行" ]]; then
+    exit 0
+fi
+
+block "⛔ 用户已取消危险命令的执行。"
