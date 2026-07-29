@@ -1,4 +1,0 @@
-interface:
-  display_name: "Subagent Code Review"
-  short_description: "默认派发 subagent 审查改动，按文件类型路由 rubric，自动修复 Critical/Important"
-  default_prompt: "Use $subagent-code-review to review my latest code changes with an independent subagent and auto-fix the findings."

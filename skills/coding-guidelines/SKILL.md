@@ -1,6 +1,6 @@
 ---
 name: coding-guidelines
-description: 用于减少常见 LLM 编码错误的行为准则。在编写、审查或重构代码时使用，以避免过度复杂化（overcomplication）、进行精准修改（surgical changes）、暴露假设（assumptions），并定义可验证的成功标准（success criteria）。
+description: 减少常见 LLM 编码错误的行为准则。在编写、修改、重构或审查代码时使用。
 license: MIT
 ---
 
@@ -70,7 +70,7 @@ license: MIT
 
 **写完代码不等于完成。先验证，再用独立上下文复审。**
 
-**REQUIRED SUB-SKILL:** `ninja:subagent-code-review` — 实现后默认派发独立 subagent 审查改动。跳过条件、rubric 路由、fallback 策略均以该 skill 为准，不在此重复。
+**REQUIRED SUB-SKILL:** `subagent-code-review` — 实现后默认派发独立 subagent 审查改动。跳过条件、rubric 路由、fallback 策略均以该 skill 为准，不在此重复。
 
 完成实现后：
 - 运行与改动相关的测试、类型检查或 lint，汇总命令与结果。

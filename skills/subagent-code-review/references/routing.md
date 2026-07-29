@@ -4,7 +4,7 @@
 
 | 情形 | 处理 |
 |---|---|
-| **全部**文件是前端 | 一个 reviewer，rubric = `ninja:frontend-code-review` |
+| **全部**文件是前端 | 一个 reviewer，rubric = `frontend-code-review` |
 | **全部**文件是非前端 | 一个 reviewer，rubric = 内置通用 rubric |
 | **混合**（既有前端也有非前端） | 派发**两个** reviewer，各自只审对应类型的文件列表 |
 | 只有配置文件 | 一个 reviewer，rubric = 内置通用 rubric |

@@ -4,65 +4,37 @@
 
 ## Installation
 
-### Codex
-
-Install this repository as a Codex plugin from GitHub:
-
-**Step 1: Add the marketplace**
+通过 [skills](https://github.com/vercel-labs/skills) CLI 安装（默认 symlink 到 agent 的 skills 目录）：
 
 ```bash
-codex plugin marketplace add git@github.com:imyangyong/ninja.git --ref main
+npx skills add imyangyong/ninja
 ```
 
-**Step 2: Install the plugin**
+常用选项：
 
 ```bash
-codex plugin add ninja@imyangyong
+# 只装某个 skill
+npx skills add imyangyong/ninja --skill coding-guidelines
+
+# 全局安装（用户目录而非当前项目）
+npx skills add imyangyong/ninja -g
+
+# 复制而非 symlink
+npx skills add imyangyong/ninja --copy
+
+# 列出本仓库可用的 skills
+npx skills add imyangyong/ninja --list
 ```
 
-Then restart Codex or reload plugins.
+## Skills
 
-### Claude Code
-
-**Step 1: Add the marketplace**
-
-```bash
-/plugin marketplace add imyangyong/ninja
-```
-
-**Step 2: Install the plugin**
-
-```bash
-/plugin install ninja
-```
-
-After that, reload plugins:
-
-```bash
-/reload-plugins
-```
-
-## SKILLS
-
-- frontend-code-review: 代码评审。
-- subagent-code-review: 默认派发独立 subagent 审查改动，按文件类型路由 rubric，自动修复 Critical/Important。
-- generate-commit-message: 生成符合项目规范的 commit message。
 - coding-guidelines: 降低 LLM 写代码的常见错误：先思考再动手、保持简单、外科手术式改动、目标可验证。Fork from: [Karpathy Guidelines](https://x.com/karpathy/status/2015883857489522876).
+- subagent-code-review: 默认派发独立 subagent 审查改动，按文件类型路由 rubric，自动修复 Critical/Important。
+- frontend-code-review: 前端代码审查 rubric（Vue / TypeScript）。
+- generate-commit-message: 生成符合 Conventional Commits 规范的提交消息。
+- name-variables: 把自然语言描述转换为变量名。
+- translate-zh-en: 中英互译、单词读音/释义/例句、英文拼写纠正。
 
-## Hooks
+## 设计决策
 
-Auto-loaded by Codex and Claude Code plugin discovery — no extra configuration required. `hooks/hooks.json` registers two events:
-
-### `SessionStart` — inject standing preferences
-
-Both harnesses consume the same `hookSpecificOutput.additionalContext` payload, so a single hook config and entry script serve both.
-
-- `hooks/session-start` — entry script; concatenates modules under `hooks/context.d/` (sorted) and emits them as `additionalContext`.
-- `hooks/context.d/*.md` — modular session-level preferences. See [`hooks/context.d/README.md`](hooks/context.d/README.md) for the naming convention and authoring guidance.
-
-To add new session-level guidance, drop a new `NN-<slug>.md` under `hooks/context.d/`. To remove a module's effect, delete the file — no other code changes needed.
-
-### `PreToolUse` — confirm dangerous Bash commands (macOS)
-
-- `hooks/check-dangerous-commands` — fires on every `Bash` tool call; scans the command against a built-in rule list (`rm`, `DELETE FROM`, `DROP TABLE`, `TRUNCATE`, `shutdown`/`reboot`, `mkfs`/`fdisk`, `diskutil erase`, `dd of=/dev/…`, `curl|sh` patterns, `git push --force` to `main`/`master`).
-- On a match, a macOS confirmation dialog (`osascript`) requests explicit approval. Approving exits `0` (allow); cancelling, or any environment without a GUI, exits `2` with the matched rules written to stderr so the agent is told why the call was blocked.
+本仓库曾是多 harness plugin 套件，2026-07 起改为纯 skills 仓库——见 [docs/adr/0001-pure-skills-repo.md](docs/adr/0001-pure-skills-repo.md)。贡献指南见 [CLAUDE.md](CLAUDE.md)。

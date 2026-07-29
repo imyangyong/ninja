@@ -1,5 +1,7 @@
 # 反馈处理与终止条件
 
+若 reviewer 使用 `frontend-code-review` 的 🔴🟡🟢 分级，按 🔴=Critical、🟡=Important、🟢=Minor 映射后套用本文件规则。
+
 ## Severity → 自动行动
 
 | Severity | 自动行动 |

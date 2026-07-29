@@ -1,6 +1,7 @@
 ---
 name: name-variables
 description: 当用户要求把自然语言描述的功能、属性、状态或业务概念转换为变量名，或询问某个变量该如何命名时使用。
+disable-model-invocation: true
 ---
 
 # 变量命名

@@ -1,6 +1,6 @@
 ---
 name: subagent-code-review
-description: 完成非平凡代码实现（新功能 / bug 修复 / 跨模块改动 / 重构）后触发；用户说 "review 我刚改的 / 用 subagent review / delegated review" 时触发；被 ninja:coding-guidelines §5 调用时触发。
+description: 完成非平凡代码实现（新功能 / bug 修复 / 跨模块改动 / 重构）后触发；用户说 "review 我刚改的 / 用 subagent review / delegated review" 时触发；被 coding-guidelines §5 调用时触发。
 ---
 
 # Subagent Code Review
@@ -11,18 +11,16 @@ description: 完成非平凡代码实现（新功能 / bug 修复 / 跨模块改
 
 ## Skill 依赖
 
-- **REQUIRED SUB-SKILL (conditional):** `ninja:frontend-code-review` — 当改动包含前端文件时，由派发的 reviewer subagent 通过 Skill tool 加载并作为 rubric。
-- **REQUIRED BACKGROUND:** `ninja:coding-guidelines` — 本 skill 由 coding-guidelines §5 默认触发；用户没有显式禁用前不要跳过。
+- **REQUIRED SUB-SKILL (conditional):** `frontend-code-review` — 当改动包含前端文件时，由派发的 reviewer subagent 通过 Skill tool 加载并作为 rubric。
+- **REQUIRED BACKGROUND:** `coding-guidelines` — 本 skill 由 coding-guidelines §5 默认触发；用户没有显式禁用前不要跳过。
 
-## 何时运行
+## 何时跳过
 
-**默认运行**：完成任何非平凡（non-trivial）代码实现后——新功能、bug 修复、跨模块改动、重构。
-
-**显式运行**：用户要求 "用 subagent review / 独立 agent 审查 / delegated review"，或被 `ninja:coding-guidelines` §5 触发。
-
-**不要运行**：
+触发条件见 description。本 skill 被触发（包括被 coding-guidelines §5 默认调用）**即构成用户的显式要求**——不要以 "subagent 只有用户显式要求才能派发" 或 "改动看起来简单" 为由自行降级；trivial-skip 的判定以本节为准，而不是 agent 的自我裁量。以下情况**不要运行**：
 - 改动 ≤ 3 行且明显无副作用（错别字、注释、变量重命名）。
-- 用户明确说 "跳过 review / 不用 subagent / 不要 delegation"。
+- 用户明确说 "跳过 review / 不用 subagent / 不要 delegation"——本 session 遵守，**并**立即保存为 feedback-type memory，否则下次 session 会恢复默认。
+
+**边界**：本 skill 只覆盖 agent 的内部裁量。harness 弹出的工具/权限对话框原样呈现给用户，不要替用户应答，也不要把本 skill 当作预先许可。派发前用一行简短说明告知用户（例："即将派发独立 reviewer 审查改动"），匹配上下文语气，不要套用样板。
 
 ## 何时 fallback 到本地审查
 
@@ -32,6 +30,8 @@ description: 完成非平凡代码实现（新功能 / bug 修复 / 跨模块改
 2. 用户明确禁用 delegation。
 
 **其他情况一律派发 subagent**——不要因为"改动看起来简单"或"自己能 review"就跳过。
+
+本地 fallback 审查时，若改动含前端文件，加载 `frontend-code-review` 作为 rubric。
 
 ## 流程
 
@@ -55,7 +55,7 @@ Reviewer prompt 用 [references/subagent-reviewer-prompt.md](references/subagent
 
 | 占位符 | 内容 |
 |---|---|
-| `RUBRIC_SKILL` | 前端 reviewer 填 `ninja:frontend-code-review`；通用 reviewer 填 `（无）` |
+| `RUBRIC_SKILL` | 前端 reviewer 填 `frontend-code-review`；通用 reviewer 填 `（无）` |
 | `DESCRIPTION` | 本次实现的简短说明（1-3 句），不含推理过程 |
 | `REQUIREMENTS` | 需求 / 计划 / 用户原话；无独立 plan 时写 "无独立 plan，按代码本身校准" |
 | `SCOPE` | git range 或文件列表（混合改动时只列该 reviewer 负责的文件） |

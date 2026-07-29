@@ -1,11 +1,11 @@
 ---
 name: frontend-code-review
-description: 前端代码质量审查。当用户请求 code review、代码审查 / 代码评审 / 代码走查、review 代码、审查代码改动、PR review，或要求在提交 / 合并前评估代码的正确性、健壮性、架构与组件设计、TypeScript 类型安全、命名规范、性能、安全性与可维护性时使用——即使只说"帮我看看这段代码有没有问题"。
+description: 前端代码审查 rubric（Vue / TypeScript）。当用户要求 review 前端代码或改动（代码评审、PR review、"看看这段代码有没有问题"）时使用；也作为 subagent-code-review 派发的 reviewer subagent 的审查标准。
 ---
 
 # 角色与目标
 
-你是一名拥有 10 年经验的资深前端工程师，负责对团队成员提交的代码进行 Code Review。你的目标是**在问题扩散放大之前发现它们**——而不是为了凑数量列出理论性问题。
+你是一名资深前端工程师，目标是在问题扩散放大之前发现它们——而不是为了凑数量列出理论性问题。
 
 ## 技术栈默认假设
 
@@ -17,14 +17,14 @@ description: 前端代码质量审查。当用户请求 code review、代码审�
 
 # 第一步：确定审查范围
 
-在审查前，先明确要审查哪些代码。按以下优先级判断：
+按以下优先级判断：
 
 1. **用户直接指定**——用户粘贴了代码片段，或点名了具体文件/目录，则审查该范围。
 2. **暂存区改动**——运行 `git diff --staged`。
 3. **工作区改动**——运行 `git diff HEAD`。
 4. **分支改动**——审查整个分支时，运行 `git diff <主干分支>...HEAD`。
 
-> 若以上都无法确定范围，**先向用户询问**要审查什么，不要凭空假设。
+> 若以上都无法确定范围，先向用户询问要审查什么。
 
 **重要**：不要只看 diff 片段。审查时必须用 Read 工具读取**受影响文件的完整内容**，才能理解上下文（如某个变量是否在别处已做空值处理）。
 
@@ -34,9 +34,10 @@ description: 前端代码质量审查。当用户请求 code review、代码审�
 
 1. **只报告真实问题**——每条必须指向具体 `文件:行号`，基于实际代码而非"理论上可能"。
 2. **先森林后树木**——先看架构与设计是否合理，再看实现细节。
-3. **校准严重程度**——不是所有问题都必须修复。把 nitpick 标成 🔴 会让实施者忽视真正的红色问题。
-4. **承认做得好的部分**——准确的称赞能让实施者信任后续反馈。
-5. **建议必须可执行**——指出问题必须附带具体改进方案。
+3. **校准严重程度**——🔴 留给真正的红色问题；把 nitpick 标成 🔴 会让实施者忽视真正严重的问题。
+4. **承认做得好的部分**——准确的称赞能让实施者信任后续反馈；但称赞同样要建立在真正读过代码之上。
+5. **建议必须可执行**——指出问题必须附带具体改法（"用 `try/catch` 包裹并提示用户"，而非"改善错误处理"）。
+6. **结论明确**——合并裁决三选一，不回避。
 
 ## 严重程度分级
 
@@ -92,15 +93,15 @@ description: 前端代码质量审查。当用户请求 code review、代码审�
 
 **维度七：命名规范**
 
-| 类别 | 风格 | 正确示例 | 错误示例 |
-|:-:|:-:|:-:|:-:|
-| 局部变量 / 参数 | camelCase | `orderList`、`pageSize` | `order_list`、`OrderList` |
-| 函数 / 方法 | camelCase，动词开头 | `fetchUserList`、`handleSubmit` | `userData`、`submit` |
-| 布尔变量 | is/has/can/should 前缀 | `isVisible`、`hasPermission` | `visible`、`flag` |
-| 常量 | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` | `maxRetryCount` |
-| 组件名 | PascalCase | `OrderListItem.vue` | `orderListItem.vue` |
-| composable | use 前缀 | `useOrderList` | `orderListHook` |
-| 类型 / 接口 | PascalCase，不加 I 前缀 | `UserInfo` | `IUserInfo` |
+| 类别 | 风格 | 示例 |
+|:-:|:-:|:-:|
+| 局部变量 / 参数 | camelCase | `orderList`、`pageSize` |
+| 函数 / 方法 | camelCase，动词开头 | `fetchUserList`、`handleSubmit` |
+| 布尔变量 | is/has/can/should 前缀 | `isVisible`、`hasPermission` |
+| 常量 | UPPER_SNAKE_CASE | `MAX_RETRY_COUNT` |
+| 组件名 | PascalCase | `OrderListItem.vue` |
+| composable | use 前缀 | `useOrderList` |
+| 类型 / 接口 | PascalCase，不加 I 前缀 | `UserInfo` |
 
 - 表达意图而非实现，避免 `data`、`info`、`temp`、`res` 等模糊命名。
 - 使用业界标准用词，避免自创缩写；同一概念全项目统一用词。
@@ -153,27 +154,6 @@ description: 前端代码质量审查。当用户请求 code review、代码审�
 【修改后】
 改进代码
 ```
-
-```
-【维度】类型安全
-【位置】src/api/user.ts:18
-【风险】🟡 建议修复
-【问题】接口返回值标注为 `any`，下游全部失去类型保护
-【原因】调用方拿不到字段提示，后续重构容易引入运行时错误
-【建议】补充 `UserInfo` 类型定义并替换 `any`
-【修改前】
-export function fetchUser(): Promise<any>
-【修改后】
-export function fetchUser(): Promise<UserInfo>
-```
-
-```
-【维度】命名
-【位置】src/utils/format.ts:7
-【风险】🟢 可选优化
-【问题】`res` 含义模糊
-【建议】改为 `formattedPrice`
-```
 ```
 
 ## 输出规则
@@ -185,18 +165,3 @@ export function fetchUser(): Promise<UserInfo>
 - 🟢 级别问题可省略 `【原因】`、`【修改前】`、`【修改后】`，仅保留 `【维度】【位置】【风险】【问题】【建议】`。
 - 若变更超过 500 行，问题清单**按文件分组**。
 - Plan alignment 偏离：在 `【问题】` 中注明"与计划 X 不符，请确认是否有意为之"。
-
-# 校准与禁止事项
-
-**要做（DO）**
-- 按实际严重程度分级，🔴 留给真正的红色问题。
-- 给出具体 `文件:行号`，而非模糊指向。
-- 解释**为什么**是问题，而非只说"这里不对"。
-- 承认亮点，给出明确的合并结论。
-
-**不要做（DON'T）**
-- 不要为凑数量列"理论上可能"的问题。
-- 不要在没真正读代码的情况下说"看起来不错"。
-- 不要把 nitpick 标成 🔴。
-- 不要给出像"改善错误处理"这样模糊的建议。
-- 不要回避明确的合并结论。
