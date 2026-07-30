@@ -1,13 +1,22 @@
 ---
 name: code-review
-description: 审查用户指定的代码、文件、目录、暂存区、工作区、分支或 PR 改动并给出只读的 Code Quality 与可用时的 Spec Compliance 报告。当用户要求只读 code review、代码审查/评审/走查、PR review、review since 某个 ref，或询问代码与改动是否可合并时使用；不用于已授权实现后的自动修复复审。
+description: 审查用户指定的代码、文件、目录、暂存区、工作区、分支或 PR 改动，给出 Code Quality 与可用时的 Spec Compliance 报告；也用于 coding guidelines 在已授权实现完成后触发自动修复复审。当用户要求 code review、代码审查/评审/走查、PR review、review since 某个 ref、询问改动是否可合并，或完成非平凡实现后使用。
 ---
 
 # Code Review
 
-执行只读 Code Quality 审查；存在可读需求时另行执行 Spec Compliance。用户要求 review 不代表授权修改代码。
+执行 Code Quality 审查；存在可读需求时另行执行 Spec Compliance。reviewer 始终只读，只有已获实现授权的主 agent 可在 implementation follow-up 中修复。
+
+## 0. 确定模式
+
+- **review-only**：用户要求评估、review 或是否可合并。不得修改文件，也不得从模糊请求推断修复授权。
+- **implementation follow-up**：主 agent 刚完成用户已授权的实现，并由 coding guidelines 触发本 skill。审查授权来自原实现请求，不扩展到无关修改。
+
+只有 implementation follow-up 可跳过明显无副作用的 trivial change：实际变更内容不超过 3 行，且仅为错字、注释或纯重命名；跳过时说明行数与无副作用依据。不能仅凭 diff 小就跳过行为、配置、依赖、权限或数据改动。
 
 ## 1. 固定范围
+
+implementation follow-up 必须由调用它的主 agent 提供刚完成实现的精确文件、patch 或 git range，并记录对应快照来源；该范围视为下列第 1 项。缺失、无法与用户既有改动隔离或包含来源不明的修改时停止，不得用暂存区/工作区自动优先级猜测本次实现范围。
 
 按顺序选择第一项：
 
@@ -70,6 +79,15 @@ branch/PR 未给 fixed point 时立即询问，不转而审查暂存区或工作
 
 reviewer 必须核对完整文件，只报告有具体证据、可在当前范围触发且值得行动的问题。任何 reviewer 都不得修改文件。
 
-## 6. 输出
+## 6. Implementation follow-up
 
-按 [references/output-format.md](references/output-format.md) 分轴聚合；只在同一轴内去重和按严重度排序，不跨轴移动或重排 findings。披露 spec 发现结果及各环境组 specialized rubrics。根据两个轴中已确认的最高严重度生成一个合并裁决。验证 reviewers 没有修改文件；本 skill 在任何情况下都不修复 findings。
+review-only 跳过本节。implementation follow-up 读取并遵循 [references/implementation-follow-up.md](references/implementation-follow-up.md)：
+
+- 主 agent 逐条核验 finding，只修复确认属实的 Critical 与 Important；reviewer 不得编辑。
+- Minor 默认不修；仅处理本次实现直接造成且完成修复所必需的收尾。
+- 修复后重跑相关测试、类型检查或 lint，保留成功与失败结果。
+- 若发生修复，最多再派发一轮只读 reviewer；两轮后仍有阻塞 finding 时停止并如实报告。
+
+## 7. 输出
+
+按 [references/output-format.md](references/output-format.md) 分轴聚合；只在同一轴内去重和按严重度排序，不跨轴移动或重排 findings。披露 spec 发现结果及各环境组 specialized rubrics。根据两个轴中尚未解决的最高严重度生成一个合并裁决。验证 reviewers 没有修改文件；review-only 不修复 findings，implementation follow-up 的修改只由主 agent 执行。
