@@ -70,7 +70,7 @@ license: MIT
 
 **写完代码不等于完成。先验证，再用独立上下文复审。**
 
-**REQUIRED SUB-SKILL:** `subagent-code-review` — 实现后默认派发独立 subagent 审查改动。跳过条件、rubric 路由、fallback 策略均以该 skill 为准，不在此重复。
+**REQUIRED SUB-SKILL:** `code-review` — 实现后默认进入 implementation follow-up 并派发独立 reviewer。跳过条件、rubric 路由、fallback 与修复闭环均以该 skill 为准，不在此重复。
 
 完成实现后：
 - 运行与改动相关的测试、类型检查或 lint，汇总命令与结果。

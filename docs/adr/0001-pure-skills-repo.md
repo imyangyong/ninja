@@ -7,5 +7,5 @@ Ninja 原本以 plugin 形式分发，为 Claude Code / Codex / Gemini / OpenCod
 **已接受的损失：**
 
 - 危险命令 macOS 弹窗拦截被删除，改由 harness 权限模式/允许列表兜底。
-- SessionStart 强制注入"实现后必须派发 reviewer"的语义降级：该指令并入 `coding-guidelines` §5 与 `subagent-code-review`，只在 skill 被触发加载时生效，不再有每 session 强注。
+- SessionStart 强制注入"实现后必须派发 reviewer"的语义降级：该指令并入 `coding-guidelines` §5 与 `code-review`，只在 skill 被触发加载时生效，不再有每 session 强注。
 - Codex / Gemini / OpenCode 不再受支持；若这些 harness 支持开放 skills 标准则可自然受益，但本仓库不为其维护任何适配。

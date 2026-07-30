@@ -29,8 +29,7 @@ npx skills add imyangyong/ninja --list
 ## Skills
 
 - coding-guidelines: 降低 LLM 写代码的常见错误：先思考再动手、保持简单、外科手术式改动、目标可验证。Fork from: [Karpathy Guidelines](https://x.com/karpathy/status/2015883857489522876).
-- subagent-code-review: 默认派发独立 subagent 审查改动，按文件类型路由 rubric，自动修复 Critical/Important。
-- frontend-code-review: 前端代码审查 rubric（Vue / TypeScript）。
+- code-review: 通用代码审查入口；按实际代码环境加载专项 rubric，独立检查质量与需求合规，并在实现后闭环修复。
 - generate-commit-message: 生成符合 Conventional Commits 规范的提交消息。
 - name-variables: 把自然语言描述转换为变量名。
 - translate-zh-en: 中英互译、单词读音/释义/例句、英文拼写纠正。
