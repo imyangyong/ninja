@@ -1,11 +1,11 @@
 ---
 name: code-review
-description: 审查用户指定的代码、文件、目录、暂存区、工作区、分支或 PR 改动并给出只读的 Code Quality 报告。当用户要求只读 code review、代码审查/评审/走查、PR review、review since 某个 ref，或询问代码与改动是否可合并时使用；不用于已授权实现后的自动修复复审。
+description: 审查用户指定的代码、文件、目录、暂存区、工作区、分支或 PR 改动并给出只读的 Code Quality 与可用时的 Spec Compliance 报告。当用户要求只读 code review、代码审查/评审/走查、PR review、review since 某个 ref，或询问代码与改动是否可合并时使用；不用于已授权实现后的自动修复复审。
 ---
 
 # Code Review
 
-执行只读 Code Quality 审查。用户要求 review 不代表授权修改代码。
+执行只读 Code Quality 审查；存在可读需求时另行执行 Spec Compliance。用户要求 review 不代表授权修改代码。
 
 ## 1. 固定范围
 
@@ -33,7 +33,19 @@ branch/PR 未给 fixed point 时立即询问，不转而审查暂存区或工作
 
 读取 [references/code-quality.md](references/code-quality.md) 作为始终生效的通用基线。跳过 formatter、linter、type checker 能可靠判定的问题，但可引用其实际失败解释更深层风险。
 
-## 3. 检测代码环境
+## 3. 发现需求
+
+按以下优先级收集与当前范围直接相关的 requirements sources：
+
+1. 用户直接提供的需求文字，或明确指定的 spec、文件、URL、issue、commit。
+2. 当前 PR 的 title/body/linked issues，或 review 范围的 commit message/body 明确引用的 issue、commit 或需求来源。
+3. 变更模块直接引用或同目录明确匹配的 PRD、spec、requirements、验收文档。
+
+读取候选内容后才可纳入需求集；记录来源、优先级与可读性。不可读或只提供项目背景而没有可验证行为的候选不作为 spec，并在报告披露。来源冲突时以上述优先级为准，同级冲突则停止 Spec Compliance 并请求澄清，但 Code Quality 继续。
+
+若没有可读 spec，跳过 Spec Compliance 并明确说明，不阻塞 Code Quality。若存在，读取 [references/spec-compliance.md](references/spec-compliance.md)；不得把需求缺口移入 Code Quality findings。
+
+## 4. 检测代码环境
 
 读取 [references/rubrics/registry.md](references/rubrics/registry.md)。仅使用所选范围对应的文件快照、manifest、依赖、配置与模块边界作为证据，由 AI 最终决定 specialized rubric：
 
@@ -44,16 +56,20 @@ branch/PR 未给 fixed point 时立即询问，不转而审查暂存区或工作
 
 在派发前记录每组的文件、环境证据与 rubric 路径。
 
-## 4. 独立审查
+## 5. 独立审查
 
-有 subagent 能力且用户未禁用 delegation 时，使用 [references/reviewer-prompt.md](references/reviewer-prompt.md) 为每个环境组派发只读 reviewer；多组可并行。只提供原始范围、组内文件、快照来源、环境证据、rubric 路径、标准来源和检查结果，不泄露主 agent 的猜测。
+有 subagent 能力且用户未禁用 delegation 时：
 
-否则由主 agent 使用相同基线审查，并标注：
+- 使用 [references/reviewer-prompt.md](references/reviewer-prompt.md) 为每个环境组派发只读 Code Quality reviewer。
+- 存在 spec 时，使用 [references/spec-reviewer-prompt.md](references/spec-reviewer-prompt.md) 另派一个只读 Spec Compliance reviewer。
+- 同时派发可并行的 reviewers。两个轴使用隔离上下文：质量 reviewer 不接收 spec 或合规猜测；合规 reviewer 不接收质量基线、specialized rubrics 或质量 findings。只提供各自 prompt 列出的原始证据。
 
-`审查方式：本地 fallback（原因：<无 subagent 能力 | 用户禁用 delegation>）`
+否则由主 agent 分开执行相同审查，并标注：
 
-reviewer 必须核对完整文件，只报告有具体证据、可在当前范围触发且值得行动的问题。
+`审查方式：本地 fallback（原因：<无 subagent 能力 | 用户禁用 delegation>；未实现独立上下文）`
 
-## 5. 输出
+reviewer 必须核对完整文件，只报告有具体证据、可在当前范围触发且值得行动的问题。任何 reviewer 都不得修改文件。
 
-按 [references/output-format.md](references/output-format.md) 聚合并去重，披露各环境组选择或未选择的 specialized rubrics。验证 reviewer 没有修改文件；本 skill 在任何情况下都不修复 findings。
+## 6. 输出
+
+按 [references/output-format.md](references/output-format.md) 分轴聚合；只在同一轴内去重和按严重度排序，不跨轴移动或重排 findings。披露 spec 发现结果及各环境组 specialized rubrics。根据两个轴中已确认的最高严重度生成一个合并裁决。验证 reviewers 没有修改文件；本 skill 在任何情况下都不修复 findings。
