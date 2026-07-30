@@ -16,25 +16,16 @@ description: 审查用户指定的代码、文件、目录、暂存区、工作�
 
 ## 1. 固定范围
 
-implementation follow-up 必须由调用它的主 agent 提供刚完成实现的精确文件、patch 或 git range，并记录对应快照来源；该范围视为下列第 1 项。缺失、无法与用户既有改动隔离或包含来源不明的修改时停止，不得用暂存区/工作区自动优先级猜测本次实现范围。
+以用户明确指定的代码、文件、目录或 git 范围为准；用户明确要求审查暂存区或工作区时，分别使用 `git diff --cached` 或 `git diff HEAD`，不得自行选择。
 
-按顺序选择第一项：
+审查 branch/PR 时，用户指定的 git ref 即为 fixed point；未指定则询问，不猜测默认分支。用 `git rev-parse <fixed-point>` 验证后，记录：
 
-1. 用户指定的代码、文件、目录、git 范围，或明确的 branch/PR 审查意图。
-2. 非空暂存区：`git diff --cached`。
-3. 非空工作区：`git diff HEAD`。
+- `git diff <fixed-point>...HEAD`
+- `git log <fixed-point>..HEAD --oneline`
 
-branch/PR 未给 fixed point 时立即询问，不转而审查暂存区或工作区，也不猜测 `main`/`master`。验证 fixed point 后使用 `git diff <fixed-point>...HEAD`。
+派发 reviewer 前确认范围有效且非空；无效、为空或仍有歧义时立即停止。记录唯一的 diff 命令、变更文件及快照来源，审查对象不得混入范围外的工作区内容。代码片段与完整文件审查无需构造 git diff。
 
-在派发前验证范围：代码片段非空；文件/目录存在且含可审查文件；git ref 可解析且 diff 非空。任何显式范围无效、为空或仍有歧义时停止并说明，不派发 reviewer。
-
-运行并记录唯一的 diff 命令、变更文件与完整文件快照来源。按文件状态读取：
-
-- 新增/修改文件从范围的结果端读取：暂存区用 `git show :<path>`；工作区或直接指定的文件用 filesystem；`<fixed-point>...HEAD` 用 `git show HEAD:<path>`。
-- 删除文件从范围的 preimage 读取：暂存区/工作区用 `git show HEAD:<path>`；三点范围先记录 `git merge-base <fixed-point> HEAD` 的输出，再从该 merge-base 读取。
-- 其他显式 git 范围同样分别记录结果端与 base 端；不得用未暂存 filesystem 内容替代 index 或 commit 快照。
-
-代码片段与完整文件审查不要求构造 git diff。
+implementation follow-up 必须由调用它的主 agent 提供本次实现的精确文件、patch 或 git range；若缺失或无法与用户既有改动隔离，则停止审查。
 
 ## 2. 收集证据
 
