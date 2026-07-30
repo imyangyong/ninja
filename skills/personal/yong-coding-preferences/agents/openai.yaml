@@ -1,0 +1,4 @@
+interface:
+  display_name: "Yong Coding Preferences"
+  short_description: "Apply Yong’s personal coding and UI conventions"
+  default_prompt: "Use $yong-coding-preferences while implementing this code change."

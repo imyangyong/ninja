@@ -1,72 +1,41 @@
 # Frontend Code Quality Rubric
 
-仅在 registry 有充分前端证据时加载。根据证据适配实际框架与工具，不假设 Vue、React、Vite、状态管理、测试框架或包管理器。仓库规范优先，finding 使用通用 Critical / Important / Minor 定义与输出格式。
+这是浏览器 UI 环境相对通用 Code Quality baseline 的增量检查，按实际 framework、版本、bundler 和渲染模式套用。
 
-只报告当前改动中有现实触发条件的问题；不要把下列清单当成配额。
+## UI state and lifecycle
 
-## Correctness and UI state
-
-- loading、empty、error、success、disabled 与权限状态是否可达且互不矛盾。
-- props、受控值、派生状态与本地副本是否保持单向数据流，避免陈旧或双重真相。
+- loading、empty、error、success、disabled 与权限状态是否可达且语义一致。
+- props、受控值、派生状态与本地副本是否产生陈旧状态或双重真相。
 - 条件渲染、列表 key、表单默认值、零值与空字符串是否保持业务语义。
-- effect/watch/subscription 是否使用正确依赖，并防止旧请求覆盖新结果或卸载后更新。
-- timer、listener、observer、subscription、object URL 与请求是否在生命周期结束时清理或取消。
+- effect、watch、subscription 与请求是否按实际 lifecycle 取消或清理。
 
-## Type safety and boundaries
+## Browser boundaries
 
-- component props、events/callbacks、slots/children、refs 与 API 数据是否有准确类型。
-- `any`、双重断言、ignore 指令或非空断言是否掩盖真实边界；只在产生现实风险时报告。
-- 后端数据是否在进入 UI 状态前验证或收窄，discriminated union 是否完整处理。
-- 类型与运行时默认值、可选性和框架实际行为是否一致。
+- SSR/hydration 路径是否在服务端访问 browser-only globals，或产生服务端与客户端结构差异。
+- 动态 import、环境变量和客户端/服务端边界是否符合 bundler 的静态分析规则。
+- HTML 注入 API 是否接收未经适当净化的不可信内容。
+- 动态 URL、redirect、`href`、`src` 和下载内容是否验证适合上下文的 scheme/origin。
+- `postMessage`、iframe、window opener 与跨域通信是否验证来源和消息结构。
+- token、密钥、内部端点与敏感数据是否进入客户端 bundle、持久化存储或日志。
 
-## Components and state ownership
+## Interaction and accessibility
 
-- 状态是否放在最低的共同所有者；局部状态不应无故进入全局 store。
-- component、hook/composable 与 store 是否各自拥有清晰职责，避免跨边界修改内部状态。
-- 公共组件 API 是否表达业务意图，避免泄漏特定页面实现或 speculative flexibility。
-- 抽取建议应基于重复知识、独立生命周期或清晰边界，而不是机械行数阈值。
+- 交互是否使用正确语义元素，并支持键盘、可见焦点和合理 focus order。
+- 表单 label、错误提示、dialog、动态状态与自定义控件是否具有可感知名称和关系。
+- 图片 alt、图标名称和 ARIA 是否匹配其信息或装饰用途。
+- 颜色或动画是否成为唯一信息载体，动效是否尊重 reduced-motion。
 
-## Performance
+## Styles, content and assets
 
-- render/computed/selectors 是否在真实数据规模下重复执行昂贵工作。
-- 列表、图片、bundle 与网络请求是否存在可证明的加载或内存风险。
-- memoization、virtualization、debounce、pagination 或 code splitting 只有在当前负载需要时才建议。
-- 修复性能问题不得引入陈旧闭包、错误缓存 key 或状态不同步。
+- 样式作用域、cascade 和 selector 是否污染无关组件或被意外覆盖。
+- design tokens、主题机制与 utility-class 静态扫描约束是否得到遵守。
+- 布局是否适应目标 viewport、内容变化、缩放与本地化文本长度。
+- 文案、复数、日期、数字和货币是否使用项目国际化机制。
+- 图片、字体与客户端资源是否具有与现实负载匹配的尺寸、格式、加载和失败策略。
 
-## Tests
+## Framework behavior and tests
 
-- 测试通过用户可观察行为验证组件，而不是断言内部 state、实现方法或 mock 自身。
-- 新交互覆盖关键键盘/指针路径，以及 loading、empty、error 和异步竞态等相关边界。
-- 异步测试等待可观察结果，不依赖固定 sleep。
-- E2E 与 component/unit 测试放在能以最少 seam 证明行为的最高层。
-
-## Security
-
-- HTML 注入 API（如 `v-html` / `dangerouslySetInnerHTML`）不得接收未净化的不可信内容。
-- 动态 URL、redirect、`href`、`src` 与下载内容需要适合上下文的 scheme/origin 校验。
-- token、密钥、内部端点或敏感数据不得进入客户端 bundle、持久化存储或日志。
-- 前端权限与路由守卫只改善 UX，不能被当作可信授权边界。
-- `postMessage`、iframe、window opener 与跨域通信应验证来源和消息结构。
-
-## Styles and assets
-
-- 样式作用域、cascade 与 selector 是否会污染无关组件或被意外覆盖。
-- 颜色、间距、层级和动效是否遵循仓库 design tokens 与主题机制。
-- Tailwind/UnoCSS 等静态扫描器无法发现运行时拼接的 utility class；候选 class 应以完整静态字符串、映射或项目认可的 safelist 表达。
-- 响应式布局应适应内容、缩放和目标 viewport，避免只对单一截图成立。
-- 图片、字体与其他资源应使用正确尺寸、格式、加载策略和失败回退。
-
-## Accessibility and internationalization
-
-- 交互使用正确语义元素，支持键盘、焦点可见性和合理的 focus order。
-- 表单 label、错误提示、dialog、动态状态与自定义控件具备可感知名称和关系。
-- 图片 alt 与图标名称符合其信息/装饰用途；ARIA 不替代原生语义。
-- 文案、复数、日期、数字、货币与布局不得假设单一语言或固定文本长度。
-- 动画与颜色不应成为唯一信息载体，并尊重 reduced-motion 等用户偏好。
-
-## Browser and framework integration
-
-- 只使用目标浏览器与渲染模式支持的 API；SSR/hydration 路径不得直接依赖仅浏览器全局。
-- framework lifecycle、事件、ref 与异步渲染语义应按实际版本判断。
-- 动态 import、环境变量与客户端/服务端边界应符合项目 bundler 的静态分析规则。
-- 命名与文件约定遵循仓库和实际 framework；不要强加跨项目通用的前缀或大小写偏好。
+- props、events/callbacks、slots/children、refs 与 API 数据类型是否匹配实际 runtime 默认值和可选性。
+- framework lifecycle、事件、ref、异步渲染和状态所有权是否符合所用版本。
+- UI 测试是否覆盖相关的键盘或指针路径，以及 loading、empty、error 和异步竞态。
+- 异步测试是否等待可观察结果，而不是依赖固定 sleep。

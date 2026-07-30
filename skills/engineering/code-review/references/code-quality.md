@@ -1,80 +1,53 @@
 # Code Quality Baseline
 
-这是所有代码环境共用的质量基线。仓库已记录的规则和架构决策优先；内置检查不得覆盖项目明确选择。
+评估代码自身、公共契约与运行时风险，不判断需求是否完整实现。仓库规则和架构决策优先于本基线。
 
-## Evidence rules
+## Correctness and robustness
 
-- 先理解改动意图、调用路径和完整文件，再判断 diff。
-- 每条 finding 必须能指向具体位置、代码证据和现实触发条件。
-- 不报告纯理论风险、无证据猜测或工具已可靠拦截的格式/语法问题。
-- 内置 code smell 只是 judgment call，不是硬性违规。
-- 建议采用能消除风险的最小改法，不借 review 扩大重构范围。
-- 做得好的部分只有在与风险判断相关且有证据时才提及。
-
-## Severity
-
-- **Critical**：会造成生产功能失效、错误结果、数据丢失、严重安全漏洞或不可接受的兼容性破坏；合并前必须修复。
-- **Important**：存在现实触发条件的健壮性、性能、设计或可维护性问题，虽非立即灾难但应在合并前修复。
-- **Minor**：非阻塞且确实可行动的局部改进。不要把个人风格偏好包装成 finding。
-
-## Review dimensions
-
-### Correctness and robustness
-
-- 需求中的正常路径、错误路径和边界值是否得到正确结果。
+- 正常路径、错误路径和边界值是否符合代码声明与公共契约。
 - null、空集合、零值、无效输入、异常和部分失败是否被正确建模。
 - 异步流程是否存在竞态、过期结果覆盖、重复提交、取消或清理遗漏。
 - 状态转换、资源生命周期、事务边界和错误传播是否完整。
-- 改动是否破坏调用方、公共契约、持久化数据或向后兼容。
+- 调用方、公共 API、持久化数据和向后兼容是否被破坏。
 
-### Security and privacy
+## Security and privacy
 
-- 不可信输入是否跨越注入、脚本、命令、路径或反序列化边界。
-- 鉴权、授权和租户/资源所有权是否在可信边界执行。
+- 不可信输入是否安全跨越注入、脚本、命令、路径和反序列化边界。
+- 鉴权、授权及租户或资源所有权是否在可信边界执行。
 - 密钥、token、个人数据和内部信息是否被记录、暴露或打包。
-- 默认行为是否 fail closed；前端限制不得被当成服务端安全控制。
+- 失败默认值是否 fail closed，客户端限制是否被误作可信控制。
 
-### Architecture and domain fit
+## Architecture and domain fit
 
 - 状态与行为是否由正确模块拥有，依赖方向是否符合仓库边界。
-- 新抽象是否来自当前需求，而非 speculative generality。
-- 变更是否匹配项目术语、邻近设计和已记录 ADR。
+- 抽象是否服务当前行为，而不是 speculative generality。
+- 术语、邻近设计和 ADR 是否保持一致。
 - API、类型与模块接口是否隐藏实现细节并保持一致语义。
 
-### Tests
+## Tests
 
 - 测试是否在公共行为 seam 上验证真实结果，而不是 mock 自身或内部步骤。
-- 新行为、回归路径和重要边界是否有足够覆盖。
+- 新行为、回归路径和重要边界是否有与风险相称的覆盖。
 - 异步测试是否确定，失败是否能证明行为真的损坏。
-- 缺少测试只有在存在可说明的回归风险时才是 finding。
+- 缺少测试仅在当前改动存在可说明的回归风险时形成 finding。
 
-### Performance and resources
+## Performance and resources
 
-- 复杂度、查询/请求数量、渲染或序列化成本是否随真实输入失控。
+- 复杂度、请求数量、查询数量、渲染或序列化成本是否随现实输入失控。
 - 文件、连接、定时器、监听器、订阅和任务是否在所有路径释放。
-- 缓存、批处理、分页或并发控制是否保持正确性。
-- 只报告与当前改动和现实负载相关的性能问题。
+- 缓存、批处理、分页和并发控制是否保持正确性。
 
-### Maintainability
+## Maintainability
 
 - 名称是否表达领域意图，控制流和数据流是否容易验证。
 - 一项知识是否散落在多个位置，导致未来修改容易漏改。
-- 注释是否解释不可见的约束与原因，而不是复述代码。
+- 注释是否解释不可见约束与原因。
 - 错误处理和可观测性是否让故障可定位且不泄露敏感信息。
 
 ## Code smells
 
-发现时使用 “possible <smell>” 标注，并说明为什么当前改动体现了该 smell：
+发现时使用 `possible <smell>`，并解释当前改动为什么体现该 smell；项目明确选择优先于 smell 判断。适用名单：
 
-- **Mysterious Name**：名称无法说明持有的数据或行为。
-- **Duplicated Code**：同一知识或逻辑形状在改动中重复。
-- **Feature Envy**：行为主要操纵另一个模块拥有的数据。
-- **Data Clumps**：同一组字段或参数反复一起传递。
-- **Primitive Obsession**：primitive 代替了有约束的领域概念。
-- **Repeated Switches**：多个位置对同一类型重复条件分派。
-- **Shotgun Surgery**：一个逻辑变化要求分散修改许多位置。
-- **Divergent Change**：一个模块因多个无关原因同时变化。
-- **Speculative Generality**：为当前需求不存在的未来扩展增加抽象。
-- **Message Chains**：调用方依赖过长的对象导航链。
-- **Middle Man**：模块几乎只做无价值转发。
-- **Refused Bequest**：继承者忽略或抵触大部分继承契约。
+Mysterious Name、Duplicated Code、Feature Envy、Data Clumps、Primitive Obsession、Repeated Switches、Shotgun Surgery、Divergent Change、Speculative Generality、Message Chains、Middle Man、Refused Bequest
+
+没有 finding 时返回：「未发现需要行动的 Code Quality 问题。」
