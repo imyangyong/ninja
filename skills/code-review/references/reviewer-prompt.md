@@ -10,11 +10,14 @@ Review only the supplied scope using the repository's actual code and standards.
 Scope:
 <SCOPE>
 
-Changed files:
-<CHANGED_FILES>
+Environment group and files:
+<GROUP_AND_CHANGED_FILES>
 
 Full-file snapshot source:
 <SNAPSHOT_SOURCE>
+
+Environment evidence:
+<ENVIRONMENT_EVIDENCE>
 
 Repository standards and domain sources:
 <STANDARDS_SOURCES>
@@ -23,7 +26,9 @@ Relevant deterministic check results:
 <CHECK_RESULTS_OR_NONE>
 
 Required rubric:
-Read and follow <CODE_REVIEW_SKILL>/references/code-quality.md.
+- Always read and follow <CODE_REVIEW_SKILL>/references/code-quality.md.
+- Also read and follow these selected specialized rubrics, or `none`:
+  <SPECIALIZED_RUBRICS>
 
 Rules:
 - Do not modify files, run formatters, install dependencies, commit, or perform external writes.
@@ -32,6 +37,7 @@ Rules:
 - For a committed-range review, read the result ref's version and do not substitute uncommitted workspace content.
 - For deleted files, read the declared preimage/base snapshot; do not treat the absent result file as missing context.
 - Repository-documented rules override the generic baseline.
+- Apply specialized guidance only to files and behavior for which it is relevant.
 - Skip issues reliably enforced by formatter, linter, or type checker.
 - Report only actionable defects with concrete evidence and a realistic trigger.
 - Treat built-in smells as labelled judgment calls, never hard violations.
