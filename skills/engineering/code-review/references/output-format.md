@@ -10,15 +10,15 @@
 **结论**：不可合并 | 需修改 | 证据不足 | 未发现阻塞问题
 **范围**：<scope mode 与实际 diff/path>
 **快照**：<base/result OID 或 fingerprint；stable | stale>
-**Spec**：<accepted sources | 未运行及原因 | conflicting>
-**验证**：<命令与完整结果；未运行时写原因>
+**Spec**：<accepted requirement IDs | 未运行及原因 | conflicting IDs>
+**验证**：<命令、exit code 与结果摘要；未运行时写原因>
 
 ### Evidence
 
 | Ledger | 摘要 | 限制 |
 |:-|:-|:-|
-| Scope | <changed/deleted/untracked paths 与 snapshot> | <无或限制> |
-| Requirements | <accepted/rejected/unreadable/conflicting sources> | <无或限制> |
+| Scope | <entries、status 与 snapshot> | <无或限制> |
+| Requirements | <source read status；accepted/rejected/conflicting/superseded requirement IDs> | <无或限制> |
 | Environment | <环境组、证据、rubrics、跨组 contract> | <无或限制> |
 
 | 审查轴 | Critical | Important | Minor |
@@ -28,7 +28,7 @@
 
 ### Code Quality
 
-#### [Critical] 简短标题
+#### [<finding ID>][Critical] 简短标题
 
 - **位置**：path/to/file:line
 - **证据与触发**：具体代码行为及现实条件
@@ -37,7 +37,7 @@
 
 ### Spec Compliance
 
-#### [Important][Partial] 简短标题
+#### [<finding ID>][Important][Partial] 简短标题
 
 - **位置**：path/to/file:line
 - **需求证据**：<来源> 要求 <相关行为>
@@ -47,20 +47,21 @@
 
 ### Implementation Follow-up
 
-- **已修复**：<finding → repair>
-- **未解决**：<finding → blocked 原因或 POST_FIX 结果>
-- **Minor**：<未修改，或局部收尾依据>
-- **已驳回**：<finding → evidence>
+- **已修复**：<finding ID → repair>
+- **Blocked**：<finding ID → 已请求的新授权或决策>
+- **未解决**：<finding ID → post-fix 结果>
+- **Minor / not-planned**：<finding ID → 依据>
+- **已驳回**：<finding ID → evidence>
 ```
 
 ## Aggregation
 
 - 两个轴分别去重并按 Critical、Important、Minor 排序；同级按影响排序。
 - 同一轴多个 reviewer 的同一根因合并为一条，保留最完整证据。
-- 轴间 findings 保持原分类；Spec finding 必须有 requirement evidence 与 coverage type。
-- initial findings 被修复或 rejected 后只进入 Implementation Follow-up，不计入最终严重度表。
-- review-only 省略 Implementation Follow-up；implementation follow-up 的每种 disposition 都要列出，空项写“无”。
-- Spec 未运行时保留 Spec Compliance 小节，披露 requirements ledger，不计为通过或 finding。
+- 轴间 findings 保持原分类；Spec finding 必须有 `requirement_evidence` 与 `coverage_type`。
+- initial findings 的 resolution 为 fixed 或 validation 为 rejected 时，只进入 Implementation Follow-up，不计入最终严重度表；需要 post-fix 时，fixed 还必须由 fingerprint-matched 且 prior coverage 完整的结果确认。reconciliation 后为 unresolved/blocked 的 findings 计入。
+- review-only 省略 Implementation Follow-up；implementation follow-up 的每种实际 validation/resolution 都要列出，空项写“无”。
+- Spec 未运行时保留 Spec Compliance 小节，披露 requirements ledgers，不计为通过或 finding。
 - zero-finding 使用各轴 baseline 规定的固定句式。
 
 ## Conclusion
@@ -69,7 +70,7 @@
 
 1. 任一未解决 Critical：`不可合并`。
 2. 无 Critical、任一未解决 Important：`需修改`。
-3. 无 Critical/Important，但 snapshot stale、关键审查对象不可读、同级 requirements conflicting，或用户要求判断可合并而仓库 merge policy 或用户明确要求的检查无法取得：`证据不足`。
+3. 无 Critical/Important，但 snapshot stale、关键审查对象不可读、必需 reviewer 没有合格 result 或完整 fallback、影响关键行为的 requirements conflicting，或用户要求判断可合并而仓库 merge policy/用户明确要求的检查无法取得或因环境原因失败：`证据不足`。
 4. 其余情况：`未发现阻塞问题`。
 
-“未发现阻塞问题”只描述已审查范围，不等于未运行的 Spec Compliance 或 checks 已通过。所有失败、未运行项、fallback 和 evidence limitations 必须保留。
+“未发现阻塞问题”只描述已审查范围，不等于未运行的 Spec Compliance 或 checks 已通过。最终报告展示命令、exit code、结果摘要与失败片段；完整输出通过 locator 保留。所有失败、未运行项、fallback 和 evidence limitations 必须披露。

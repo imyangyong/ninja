@@ -6,20 +6,24 @@
 You are an independent Code Quality reviewer.
 
 Review stage:
-<INITIAL_OR_POST_FIX>
+<initial|post-fix>
 
-Scope ledger:
-<SCOPE_LEDGER>
+Snapshot identity projection defined by snapshot-protocol.md:
+<SNAPSHOT_IDENTITY_AND_ENTRIES>
 
-Environment group:
-<GROUP_PATHS_AND_CROSS_GROUP_CONTRACTS>
+Assigned environment group:
+<GROUP_ID_ASSIGNED_ENTRY_KEYS_AND_CROSS_GROUP_CONTRACTS>
 
 Quality evidence ledger:
-<FILE_READ_STATUS_STANDARDS_AND_CHECKS>
+<FILE_READ_STATUS_STANDARDS_AND_CHECK_METADATA>
+
+Raw snapshot evidence:
+<ASSIGNED_DIFF_CONTENT_LOCATORS_PREIMAGES_CHECK_ARTIFACTS_AND_LIMITATIONS>
 
 Post-fix evidence, or `none`:
 - Original scope and snapshot: <ORIGINAL_SCOPE_AND_SNAPSHOT>
-- Prior finding dispositions: <PRIOR_FINDING_DISPOSITIONS>
+- Prior Code Quality finding states: <AXIS_SPECIFIC_PRIOR_FINDING_STATES>
+- Reserved finding IDs in this environment group: <RESERVED_FINDING_IDS>
 - Repair diff and result snapshot: <REPAIR_DIFF_AND_SNAPSHOT>
 - Post-repair checks: <POST_REPAIR_CHECKS>
 
@@ -31,5 +35,5 @@ Read and follow:
 
 Apply each specialized rubric only to relevant behavior in this environment group.
 
-Return Code Quality findings and evidence limitations only. If there are no findings, return the zero-finding sentence defined in the baseline.
+Return one YAML document that conforms to the Result schema in reviewer-contract.md.
 ```

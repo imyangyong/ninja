@@ -1,11 +1,11 @@
 # Spec Compliance Baseline
 
-只比较 requirements ledger 中 accepted sources 与 scope ledger。该轴不评价一般代码质量。
+只比较 requirements ledgers 中 accepted clauses 与 scope ledger。该轴不评价一般代码质量。
 
 ## Evidence
 
 - 读取完整需求及必要实现路径，每条 finding 指向权威来源中的具体要求。
-- 按 requirements ledger 的权威顺序解释来源；需求沉默不产生新要求。
+- 需求沉默不产生新要求。
 - 范围外既有缺口可作为限制披露，不计入 finding 或裁决。
 
 ## Coverage
@@ -17,8 +17,8 @@
 
 每条 finding 在 reviewer contract 的公共字段之外，还必须包含：
 
-- `requirement evidence`：来源标识及短引或准确转述；
-- `coverage type`：Missing、Partial、Incorrect 或 Unrequested；
-- `implementation evidence`：当前范围与要求之间的可观察差异。
+- `requirement_evidence`：source ID 及短引或准确转述；
+- `coverage_type`：Missing、Partial、Incorrect 或 Unrequested；
+- `implementation_evidence`：当前范围与要求之间的可观察差异。
 
-没有 finding 时返回：“当前范围符合 accepted requirements sources。”
+没有 finding 时返回：“当前范围符合 accepted requirements。”
