@@ -70,8 +70,9 @@ license: MIT
 
 **写完代码不等于完成。先验证，再用独立上下文复审。**
 
-**REQUIRED SUB-SKILL:** `code-review` — 实现后默认进入 implementation follow-up 并派发独立 reviewer。跳过条件、rubric 路由、fallback 与修复闭环均以该 skill 为准，不在此重复。
+**REQUIRED SUB-SKILL:** `code-review` — 对本次实现改动的精确范围发起一次只读审查。
 
 完成实现后：
 - 运行与改动相关的测试、类型检查或 lint，汇总命令与结果。
-- 调用上述 sub-skill 派发 review。
+- 调用上述 sub-skill：传入本次改动的精确 entries（不使用“当前修改”默认范围，避免混入用户既有改动）、已有的检查结果，以及（如适用）显式需求包。
+- 是否处理 findings、如何修复由你决定；修复后需要复审时，对同一精确范围发起一次新的普通审查。

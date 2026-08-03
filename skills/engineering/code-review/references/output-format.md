@@ -1,76 +1,36 @@
 # Review Output
 
-保持精炼，使用以下结构：
+findings 按严重度优先展示,Code Quality 与 Spec Compliance 保持分离。
 
 ```markdown
 ## Code Review
 
-**审查方式**：独立 reviewer | 本地 fallback（原因：...）
-**模式**：review-only | implementation follow-up
-**结论**：不可合并 | 需修改 | 证据不足 | 未发现阻塞问题
-**范围**：<scope mode 与实际 diff/path>
-**快照**：<base/result OID 或 fingerprint；stable | stale>
-**Spec**：<accepted requirement IDs | 未运行及原因 | conflicting IDs>
-**验证**：<命令、exit code 与结果摘要；未运行时写原因>
-
-### Evidence
-
-| Ledger | 摘要 | 限制 |
-|:-|:-|:-|
-| Scope | <entries、status 与 snapshot> | <无或限制> |
-| Requirements | <source read status；accepted/rejected/conflicting/superseded requirement IDs> | <无或限制> |
-| Environment | <环境组、证据、rubrics、跨组 contract> | <无或限制> |
-
-| 审查轴 | Critical | Important | Minor |
-|:-|:-:|:-:|:-:|
-| Code Quality | N | N | N |
-| Spec Compliance | N / 未运行 | N / 未运行 | N / 未运行 |
+**结论**:存在阻塞问题 | 证据不足 | 未发现阻塞问题
+**方式**:delegation | 本地回退
+**范围**:<scope summary and fingerprint>
+**检查**:<commands, exit codes, coverage, outcomes;未运行时说明原因>
+**Findings**:Code Quality C/I/M;Spec Compliance C/I/M 或未运行
 
 ### Code Quality
 
-#### [<finding ID>][Critical] 简短标题
-
-- **位置**：path/to/file:line
-- **证据与触发**：具体代码行为及现实条件
-- **影响**：不修复会发生什么
-- **最小修复**：消除风险的可执行改法
+#### [CQ-N][Critical] <title> — `path:line`
+<证据与现实触发条件>。<影响>。**最小修复:** <action>。
 
 ### Spec Compliance
 
-#### [<finding ID>][Important][Partial] 简短标题
+#### [SC-N][Important][Partial] <title> — `path:line`
+**需求:** <source locator and clause>。**差异:** <implementation evidence>。**影响:** <impact>。**最小修复:** <action>。
 
-- **位置**：path/to/file:line
-- **需求证据**：<来源> 要求 <相关行为>
-- **实现证据**：当前范围与要求的差异
-- **影响**：对验收或交付的实际影响
-- **最小修复**：满足要求的最小改法
-
-### Implementation Follow-up
-
-- **已修复**：<finding ID → repair>
-- **Blocked**：<finding ID → 已请求的新授权或决策>
-- **未解决**：<finding ID → post-fix 结果>
-- **Minor / not-planned**：<finding ID → 依据>
-- **已驳回**：<finding ID → evidence>
+### Limitations
+<stale/unreadable evidence、缺失上下文、本地回退、失败或跳过的检查;为空时省略>
 ```
 
-## Aggregation
+某轴没有 findings 时使用对应 baseline 的固定句式。Spec Compliance 未运行时明确说明,不能称为通过。同轴同根因合并,不得跨轴移动 finding。内部 manifest 与 reviewer YAML 仅在解释 stale 或 incomplete 时展开。
 
-- 两个轴分别去重并按 Critical、Important、Minor 排序；同级按影响排序。
-- 同一轴多个 reviewer 的同一根因合并为一条，保留最完整证据。
-- 轴间 findings 保持原分类；Spec finding 必须有 `requirement_evidence` 与 `coverage_type`。
-- initial findings 的 resolution 为 fixed 或 validation 为 rejected 时，只进入 Implementation Follow-up，不计入最终严重度表；需要 post-fix 时，fixed 还必须由 fingerprint-matched 且 prior coverage 完整的结果确认。reconciliation 后为 unresolved/blocked 的 findings 计入。
-- review-only 省略 Implementation Follow-up；implementation follow-up 的每种实际 validation/resolution 都要列出，空项写“无”。
-- Spec 未运行时保留 Spec Compliance 小节，披露 requirements ledgers，不计为通过或 finding。
-- zero-finding 使用各轴 baseline 规定的固定句式。
+按顺序选择唯一结论:
 
-## Conclusion
+1. 任何必需轴为 stale 或 incomplete,或需求包不可读、互相冲突 → `证据不足`;
+2. 存在 Critical 或 Important finding → `存在阻塞问题`;
+3. 其余 → `未发现阻塞问题`。
 
-按以下顺序选择唯一结论：
-
-1. 任一未解决 Critical：`不可合并`。
-2. 无 Critical、任一未解决 Important：`需修改`。
-3. 无 Critical/Important，但 snapshot stale、关键审查对象不可读、必需 reviewer 没有合格 result 或完整 fallback、影响关键行为的 requirements conflicting，或用户要求判断可合并而仓库 merge policy/用户明确要求的检查无法取得或因环境原因失败：`证据不足`。
-4. 其余情况：`未发现阻塞问题`。
-
-“未发现阻塞问题”只描述已审查范围，不等于未运行的 Spec Compliance 或 checks 已通过。最终报告展示命令、exit code、结果摘要与失败片段；完整输出通过 locator 保留。所有失败、未运行项、fallback 和 evidence limitations 必须披露。
+Minor 不改变结论。任何结论都不代表可合并,或满足 CI、审批、分支保护等仓库策略;“未发现阻塞问题”只陈述已审查证据支持的内容,不代表跳过的检查或未运行的审查轴已通过。

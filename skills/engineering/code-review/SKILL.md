@@ -1,90 +1,43 @@
 ---
 name: code-review
-description: Code review 用户指定的 patch/snippet、文件、staged/worktree、commit/branch/PR；用于合并前审查，也供 coding-guidelines 在授权实现后触发审查与修复。
+description: 只读审查用户指定的 patch/snippet、文件、当前修改(staged/unstaged/untracked/deleted)、commit/range/branch 或 PR;也用于 coding-guidelines 要求的实现后审查。
 ---
 
 # Code Review
 
-对固定快照执行双轴隔离审查：
+对一个固定范围执行一次只读、证据有界的审查。不修改实现、不理解修复阶段、不拥有 finding resolution;修复后需要复审时,由调用方发起一次新的普通审查。
 
-- **Code Quality**：代码自身、公共契约与运行时风险。
-- **Spec Compliance**：实现与 accepted requirements 之间的差异。
+审查轴:
 
-所有 reviewer 遵守 [reviewer contract and result schema](references/reviewer-contract.md)。
-
-## 0. 确定模式
-
-- **review-only**（默认）：只读评估，并在证据允许时判断是否适合合并。
-- **implementation follow-up**：由 `coding-guidelines` 在主 agent 完成用户授权的实现后触发；修复权限等于原实现授权。
-
-**完成条件**：模式唯一；implementation follow-up 已记录原实现授权与精确改动范围。
+- **Code Quality**:每个非空范围都执行,没有微小改动跳过规则。正确性、安全性、架构、测试、性能与可维护性。
+- **Spec Compliance**:仅在用户或调用方显式提供需求包时执行。
 
 ## 1. 固定范围
 
-读取并执行 [snapshot protocol](references/snapshot-protocol.md)。scope mode 必须来自用户或调用方的明确声明；声明缺失或存在实质歧义时请求具体范围。
+执行 [snapshot protocol](references/snapshot-protocol.md)。范围模式来自用户或调用方的明确声明;缺失或有实质歧义时询问,无法形成唯一范围时停止,不猜测。直接审查“当前修改”时覆盖全部 staged、unstaged、untracked 与 deleted entries;实现流程调用必须传入本次改动的精确范围,不能与既有改动隔离时停止。空范围直接结束。
 
-implementation follow-up 使用调用方提供的精确 patch、文件集或 commit range；不能与用户既有改动隔离时停止。空范围报告“没有可审查的变更”并结束。
+**完成条件**:每个变更项恰好有一个可验证 entry 或明确 limitation;所有 ref 已解析;fingerprint 可独立重算。
 
-implementation follow-up 仅在以下条件全部成立时跳过 review：diff 增删不超过 3 行；每行仅为不改变行为的普通注释或自然语言错字；文件不作为工具指令、生成输入/产物、配置、schema、公共文档或机器可读内容被消费；不含 rename、mode、symlink、submodule 或 binary change。跳过时逐项报告证据并结束；代码字符串、标识符、directive/doc comment、snapshot 和 fixture 不视为普通错字。
+## 2. 收集证据
 
-**完成条件**：scope ledger 通过 snapshot protocol 的 schema 与完整性检查；所有可移动 ref 均已解析；初始 fingerprint 与捕获内容一致。
+读取 diff、受影响实现路径与适用的仓库指令。由主流程统一执行安全、只读的相关检查一次,记录 command、exit code、coverage、outcome 与失败或跳过原因,作为所有轴共享的检查证据;轴审查者不重复执行命令。
 
-## 2. 收集 Code Quality 证据
+需求只接受显式提供的需求包:有序 clauses,每条含稳定 ID、来源 locator 与准确短引或忠实转述;缺 ID 按输入顺序补齐。不从 PR、commit、邻近文档、ADR 或 issue tracker 自动发现需求。引用不可读或 clauses 互相冲突时 Spec Compliance 为 incomplete。没有需求包时 Spec Compliance 不运行,且不能称为通过。
 
-按 [reviewer contract](references/reviewer-contract.md) 和 [Code Quality baseline](references/code-quality.md)。建立 quality evidence ledger，包含：
+**完成条件**:每个范围项可读或有明确 limitation;每个相关检查已执行或记录跳过原因;需求包已验证,或记录不可读/冲突。
 
-- scope 中每个 entry 的读取状态；
-- 当前 snapshot 适用的 `AGENTS.md`、`CLAUDE.md`、`CONTRIBUTING.md`、`CONTEXT.md`、ADR 与项目编码规范；
-- 已运行检查的命令、snapshot、覆盖范围、exit code、结果摘要与 artifact key；未运行时记录原因。
+## 3. 执行审查轴
 
-另行准备 raw snapshot evidence：captured diff、entry content locator、deleted preimage、检查 output locator，以及 binary/generated/unreadable 限制。ledger 只索引证据，不复制 raw content。
+加载 [Code Quality baseline](references/code-quality.md);仅当 runtime 证据证明浏览器 UI 时另加载 [Frontend rubric](references/rubrics/frontend.md),文件扩展名或目录名不能单独触发。
 
-复用用户或调用方提供的有效检查。review-only 只运行已知只读、无需安装依赖且不写入外部系统的现有检查。检查是否足以省略对应问题，按 reviewer contract 的 Deterministic checks 判断。
+宿主支持 delegation 时,每个轴派发一个完整范围的独立轴审查者,容量允许时两轴并行。派发输入:预期 fingerprint、完整 entry 集合、可读取的原始证据、共享检查证据,Spec 轴另附需求包。reviewer 只接收原始证据,不接收实现者推理或另一轴 findings。无法 delegation 时,主 agent 按相同合同先完成并冻结 Code Quality,再执行 Spec Compliance,并披露本地回退。
 
-**完成条件**：每个 scope entry 都有读取状态，以及唯一 raw evidence locator 或明确 limitation；每项规则与检查都绑定 snapshot；每个检查都有可读取的完整结果或明确的未运行/截断记录；限制均已记录。
+按 [reviewer contract](references/reviewer-contract.md) 验证结果;invalid 结果只携 validation errors 重试一次,再次 invalid 则该轴为 incomplete。聚合前重新枚举 mutable scope 并比较 fingerprint;内容或 entry 集合变化时对应结果为 stale,不混合新旧证据。
 
-## 3. 建立 requirements ledgers
+**完成条件**:Code Quality 覆盖全部范围;Spec Compliance 已执行或明确未运行;每个结果通过 contract 验证,或记为 stale/incomplete。
 
-读取并执行 [requirements policy](references/requirements-policy.md)。没有 accepted clause 时跳过 Spec Compliance；存在 accepted clauses 时读取 [Spec Compliance baseline](references/spec-compliance.md)。
+## 4. 汇总报告
 
-**完成条件**：每个适用来源通道都已搜索并记录结果；每个候选来源都有 authority、snapshot、读取状态与依据；每个可读来源的相关 clause 都有状态与依据；冲突只影响对应 clause，并已记录对裁决的影响。
+使用 [output format](references/output-format.md)。两轴分离,仅同轴同根因去重。结论按证据优先级得出,只陈述已审查证据支持的内容,不代表满足仓库 merge policy。
 
-## 4. 路由审查环境
-
-按共同 manifest、构建边界、运行环境和调用关系建立 environment groups。独立性证据不足的 entries 放入同组；跨组 changed contract 指定一个负责组或建立 integration group。
-
-通用 Code Quality baseline 始终生效。出现浏览器组件、UI runtime、DOM/渲染 API，或 manifest 与 changed path 共同证明浏览器 UI 环境时，加载 [Frontend rubric](references/rubrics/frontend.md)。HTML、CSS、扩展名、目录名或 bundler 配置不能单独触发。
-
-建立 environment ledger：group ID、paths、运行环境证据、跨组 contract 与 selected rubrics。分组确定后，按每组最小 assigned entry key 的 UTF-8 byte order 排序并分配 `CQG-001` 起的稳定 group ID；integration group 参与同一排序。
-
-**完成条件**：每个 scope entry 恰好有一个 primary group；每条跨组 changed contract 有 reviewer 归属；每组记录实际 rubric 选择。
-
-## 5. 执行独立审查
-
-宿主支持且 delegation 符合当前指令权限时，在声明 scope 内派发只读 reviewer：
-
-- 每个 environment group 按 [Code Quality prompt](references/code-quality-reviewer-prompt.md) 派发一个只读 reviewer，传不含 `user_declaration` 的 snapshot identity projection，并明确该组 assigned entry keys；
-- 有 accepted requirements 时，按 [Spec Compliance prompt](references/spec-reviewer-prompt.md) 派发一个只读 reviewer；
-- 在宿主并发容量内并行，其余 reviewer 分批执行。
-
-每个 reviewer 只接收本轴原始证据、适用 references 和 snapshot identity，不接收实现者推理、另一轴 findings 或预期答案。
-
-无法 delegation 时，主 agent 先完成并冻结 Code Quality 结果，再用 requirements 与实现原始证据完成 Spec Compliance，并披露：
-
-`审查方式：本地 fallback（原因：<原因>；仅逻辑隔离，无独立上下文）`
-
-聚合前按 reviewer contract 的 Result validation 验证每份结果。invalid initial result 只携带 validation errors 重试一次；再次失败时由主 agent 对该 reviewer scope 执行本地 fallback 并披露。schema-valid stale result 不重试，直接限制裁决。按 snapshot protocol 重算 mutable fingerprint；不一致时将对应结果视为 stale，不作确定性裁决。
-
-**完成条件**：每个 environment group 恰好有一份 schema-valid Code Quality 结果，所有 complete 结果均 fingerprint-matched；Spec 轴有一份同等合格的结果或明确跳过原因；stale 均已限制裁决；snapshot 已复核。
-
-## 6. Implementation follow-up
-
-review-only 跳过本节。implementation follow-up 继续执行 [implementation follow-up](references/implementation-follow-up.md) 的 finding validation、repair 与 post-fix review。
-
-**完成条件**：每条 finding 的 validation 与 resolution 均闭合；所有 confirmed Critical/Important 已 fixed，或以 blocked/unresolved 保留；blocked 所需的用户决策已明确请求；验证与每个受影响 reviewer scope 最多一次复审已完成。
-
-## 7. 输出
-
-按 [output format](references/output-format.md) 分轴去重、排序和裁决。最终报告只展示 ledger 摘要；保留所有证据限制、检查失败、未运行项、fallback、stale snapshot 与 unreadable evidence。
-
-**完成条件**：最终计数与未解决 findings 一致；裁决符合输出规则；finding 保持原审查轴；所有限制均已披露。
+**完成条件**:披露 stale/unreadable evidence、缺失上下文、失败或跳过的检查与本地回退;每条 finding 符合 contract;结论符合优先级规则。
