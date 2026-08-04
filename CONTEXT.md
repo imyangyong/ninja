@@ -21,7 +21,7 @@ _Avoid_: 推测需求、自动发现需求
 _Avoid_: Environment reviewer、分组 reviewer
 
 **审查状态**：
-轴审查者对证据完整性的判定：`complete` 表示范围已完整审查，`stale` 表示范围身份已变化，`incomplete` 表示关键对象或证据不可用。
+轴审查者对证据完整性的判定：`complete` 表示范围已完整审查，`incomplete` 表示关键对象或证据不可用。可变范围身份变化时，整次审查而非单轴为 `stale`。
 _Avoid_: 用 limitation 代替状态、部分通过
 
 **当前修改**：
