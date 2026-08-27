@@ -15,6 +15,7 @@ description: 应用 Yong 的个人编码偏好。在实现、修改、重构或�
    - 项目使用原子化 CSS 且改动涉及样式 → 读取 `references/atomic-css.md`
    - 改动涉及会并发发出的异步请求（搜索输入、Tab/筛选切换、分页联动等）且旧响应可能覆盖新结果 → 读取 `references/race-condition.md`
    - 改动涉及 UI 实现且项目已有可复用组件 → 读取 `references/component-reuse.md`
+   - 改动涉及需要就地处理失败的 `await`（不写 try/catch 就无法区分成败的场景）→ 读取 `references/until.md`
 3. 只应用与本次改动相关的偏好，并保持未涉及代码稳定。
 4. 完成后逐项检查所有新增或实质修改的代码；每条适用偏好均已落实或有项目约束作为例外。
 
