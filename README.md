@@ -1,5 +1,10 @@
 # Ninja
 
+> [!CAUTION]
+> **本仓库已归档（Archived），不再维护。**
+> 所有 skills 已迁移至新仓库：👉 **https://github.com/imyangyong/skills**
+> 请前往新仓库获取最新版本并提交 Issue / PR。
+
 [Yang Yong](https://github.com/imyangyong)’s Personalized AI Extension Suite.
 
 ## Installation
